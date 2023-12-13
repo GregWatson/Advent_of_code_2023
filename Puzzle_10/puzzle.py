@@ -74,32 +74,56 @@ def find_loop(start, map):
         new_map[y][x] = c
     return steps, new_map
 
-def get_count_inside(m):
-    for l in m:
-        print( ''.join(l))
-        state = 'out' # outside loop
-        s = ''
-        count = 0
+def add_space(m):
+    m2 = []
+    for y in m:
+        # double in x dir
+        line = []
+        for x,c in enumerate(y):
+            line.append(c)
+            if c in '.|J7': line.append(' ')
+            elif c in '-FLS': line.append('-')
+            else:
+                print(f"Unknown char '{c}'")
+                sys.exit(1)
+        m2.append(line)
+        l = []
+        for c in line:
+            if c in '.J-LS ': l.append(' ')
+            elif c in '|7F': l.append('|')
+            else:
+                print(f"Unknown char '{c}'")
+                sys.exit(1)
+        m2.append(l)
+    return m2
 
-        for c in l:
-            new_state = state
-            if state == 'out':
-                if c != '.': 
-                    if c in "FL": new_state = 'in_pipe'
-                    else : new_state='in'
-            elif state == 'in_pipe':
-                if c != '-': new_state = 'in'
-            elif state == 'out_pipe':
-                if c != '-': new_state = 'out'
-            else: # inside loop
-                if c == '.': count = count + 1
-                else:
-                    if c != '-': new_state = 'out'
-            # new state
-            if c == '.' : s = s + ('O' if new_state == 'out' else 'I')
-            else: s = s + '+'
-            state = new_state
-        print(s)
+def add_new_adjacent_locs(x,y,m,stack):
+    if m[y][x-1] in ' .': stack.append((x-1,y))
+    if m[y][x+1] in ' .': stack.append((x+1,y))
+    if m[y-1][x] in ' .': stack.append((x,y-1))
+    if m[y+1][x] in ' .': stack.append((x,y+1))
+
+
+def flood_search(pos, m):
+    x,y = (pos[0], pos[1])
+    print(f"Start: x{x} y{y}")
+    if m[y][x] != '#':
+        print(f"Err - bad starting char {m[y][x]}")
+        sys.exit(1)
+    m[y][x] = ' '
+    stack = [(x,y)]  # unchecked locations
+    done = False
+    count = 0
+    while len(stack):
+        (x,y) = stack.pop()
+        c = m[y][x]
+        if c == '.': count = count + 1
+        m[y][x] = '#'
+        add_new_adjacent_locs(x,y,m,stack)
+
+
+    return count
+
 
 #---------------------------------------------------------------------------------------
 # Load input
@@ -114,4 +138,16 @@ print(f"steps:{steps} so half is {steps>>1}")
 for l in new_map:
     print( ''.join(l))
 
-c = get_count_inside(new_map)
+# Double each direction to add spaces
+map2 = add_space(new_map)
+
+start=(81, 13)
+
+map2[start[1]][start[0]] = '#'
+
+c = flood_search(start, map2)
+
+for l in map2:
+    print(''.join(l))
+
+print(f"Count inside loop is {c}")

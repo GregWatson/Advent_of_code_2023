@@ -24,24 +24,26 @@ def get_reports(db):
     reps = []
     for l in db:
         data = l.split()
-        nums=data[1].split(',')
+        s = '?'.join([data[0],data[0],data[0],data[0],data[0]])
+        n = ','.join([data[1],data[1],data[1],data[1],data[1]])
+        nums=n.split(',')
         num=0
         for n in nums:
             num=100*num + int(n)
         # print(f"{data[1]} {num}")
-        reps.append((data[0], num))
+        reps.append((s, num))
     return reps
 
 # Return sequence ID for s. String is only . or #
 def get_sequence_from_good_string(s):
     seq  = 0
-    good_count = 0
+    count = 0
     for c in s:
-        if c == '.': good_count = good_count+1
+        if c == '#': count = count+1
         else:
-            if good_count != 0: seq = seq * 100 + good_count
-            good_count = 0
-    if good_count != 0: seq = seq * 100 + good_count
+            if count != 0: seq = seq * 100 + count
+            count = 0
+    if count != 0: seq = seq * 100 + count
     return seq
 
 # return list of all poss seqs.
@@ -99,11 +101,13 @@ reps = get_reports(db) # list of tuple ( orig_string, seq_ID)
 #s = '.##.#...#..........##.....#........#......#....'
 #print(f"{s} -> {get_sequence_from_good_string(s)}")
 
+
 tot = 0
 for r in reps:
-    # r = ('??#?.',101)
+    # r = ('?.???????..?##???', 603)
+    print(f"Process{r}")
     combs = get_combs(r)
     print(f"Valids for {r} are {combs}")
     tot = tot + len(combs)
-    
+    # break
 print(f"tot is {tot}")
